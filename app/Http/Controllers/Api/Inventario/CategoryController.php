@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use  App\Models\Inventario\Categorie;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
+use App\Models\Inventario\Brand;
 
 class CategoryController extends Controller
 {
@@ -30,17 +32,13 @@ class CategoryController extends Controller
         }
 
         $data = $request->all();
-
         // Procesar la imagen si existe
         if ($request->hasFile('image')) {
             $image = $request->file('image');
-
             // Generar nombre único para la imagen
             $imageName = Str::random(20) . '.' . $image->getClientOriginalExtension();
-
             // Guardar en storage/app/public/categories
             $path = $image->storeAs('public/categories', $imageName);
-
             // Almacenar la ruta relativa (sin 'public/')
             $data['image'] = 'categories/' . $imageName;
         }
@@ -51,6 +49,24 @@ class CategoryController extends Controller
         );
 
         return response()->json($category, 201);
+    }
+
+
+    public function validateCode(Request $request)
+    {
+        $request->validate([
+            'codigo' => 'required|string|max:50',
+            'enterprise_id' => 'required|exists:empresas,id'
+        ]);
+
+        $exists = Categorie::where('codigo', $request->codigo)
+            ->where('id_empresa', $request->enterprise_id)
+            ->exists();
+
+        return response()->json([
+            'is_valid' => !$exists,
+            'message' => $exists ? 'El código ya existe para esta empresa' : 'Código disponible'
+        ]);
     }
 
     public function show($id)

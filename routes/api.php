@@ -46,6 +46,10 @@ Route::apiResource('tipo-precio-unitario-fe', TipoPrecioUnitarioController::clas
 Route::apiResource('catalogo-fe-07', TipoAfectacionIgvController::class);
 Route::apiResource('catalogo-fe-17', TipoOperacionController::class);
 
+//Categorias de productos
+Route::post('/categories/validate-code', [CategoryController::class, 'validateCode']);
+Route::post('/brands/validate-code-brand', [BrandController::class, 'validateCode']);
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
