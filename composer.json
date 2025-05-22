@@ -9,7 +9,10 @@
         "php": "^8.2",
         "darkaonline/l5-swagger": "^9.0",
         "laravel/framework": "^12.0",
+<<<<<<< HEAD
         "laravel/sanctum": "^4.0",
+=======
+>>>>>>> develop
         "laravel/tinker": "^2.10.1"
     },
     "require-dev": {
@@ -17,6 +20,10 @@
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.13",
         "laravel/sail": "^1.41",
+<<<<<<< HEAD
+=======
+        "laravel/sanctum": "^4.1",
+>>>>>>> develop
         "laravel/telescope": "^5.7",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
