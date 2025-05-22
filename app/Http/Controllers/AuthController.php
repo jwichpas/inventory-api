@@ -16,20 +16,21 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'empresa_id' => 'required|exists:empresas,id'
+            /* 'empresa_id' => 'required|exists:empresas,id' */
         ]);
 
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'empresa_id' => $validated['empresa_id']
+            /* 'empresa_id' => $validated['empresa_id'] */
         ]);
 
         // Asignar rol por defecto (ajusta según tu sistema de roles)
         $user->assignRole('user');
 
-        $token = $user->createTokenForEmpresa($validated['empresa_id']);
+        /* $token = $user->createTokenForEmpresa($validated['empresa_id']); */
+        $token = $user->createTokenForEmpresa('auth_token');
 
         return response()->json([
             'user' => $user,
@@ -42,11 +43,10 @@ class AuthController extends Controller
         $request->validate([
             'email' => 'required|email',
             'password' => 'required',
-            'empresa_id' => 'required|exists:empresas,id'
+            /* 'empresa_id' => 'required|exists:empresas,id' */
         ]);
 
         $user = User::where('email', $request->email)
-            ->where('id_empresa', $request->empresa_id)
             ->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {

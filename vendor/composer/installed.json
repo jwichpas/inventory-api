@@ -8996,7 +8996,6 @@
         "laravel/pail",
         "laravel/pint",
         "laravel/sail",
-        "laravel/sanctum",
         "laravel/telescope",
         "mockery/mockery",
         "myclabs/deep-copy",

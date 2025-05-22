@@ -1,6 +1,9 @@
 <?php
+
+use App\Http\Controllers\Api\Empresa\SelectEmpresaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Api\EmpresaController;
+use App\Http\Controllers\Api\Empresa\EmpresaDataController;
 use App\Http\Controllers\MovimientoController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
@@ -16,12 +19,20 @@ use App\Http\Controllers\Api\Inventario\AlmacenController;
 use App\Http\Controllers\Api\Inventario\AlmacenStockController;
 use App\Http\Controllers\Api\Inventario\MovimientoCabeceraController;
 use App\Http\Controllers\Api\Inventario\MovimientoDetalleController;
+use App\Http\Controllers\Api\Sire\ComprasController;
+use App\Http\Controllers\Api\Sire\PeriodoController;
+use App\Http\Controllers\Api\Sire\ReporteResumenController;
+use App\Http\Controllers\Api\Sire\ReporteResumenDetalleController;
+use App\Http\Controllers\Api\Sire\VentaResumenController;
 use App\Http\Controllers\Api\TablaGeneral\TipoDocumentoController;
 use App\Http\Controllers\Api\TablaGeneral\TipoOperacionPleController;
 use App\Http\Controllers\Api\TablaGeneral\TipoPrecioUnitarioController;
 use App\Http\Controllers\Api\TablaGeneral\TipoAfectacionIgvController;
 use App\Http\Controllers\Api\TablaGeneral\TipoOperacionController;
-
+use App\Http\Controllers\Api\Sire\VentasController;
+use App\Models\Sire\SireResumenVentas;
+use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
+use App\Http\Controllers\Api\UserEmpresaController;
 
 Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/login', [AuthController::class, 'login']);
@@ -49,6 +60,40 @@ Route::apiResource('catalogo-fe-17', TipoOperacionController::class);
 //Categorias de productos
 Route::post('/categories/validate-code', [CategoryController::class, 'validateCode']);
 Route::post('/brands/validate-code-brand', [BrandController::class, 'validateCode']);
+
+// Ruta para listar COMPRAS SIRE
+Route::apiResource('compras', ComprasController::class);
+Route::get('/compras/ruc/{ruc}', [ComprasController::class, 'comprasPorRuc']);
+Route::get('/compras/proveedor', [ComprasController::class, 'comprasPorProveedor']);
+Route::get('/compras-sire/por-periodo', [ComprasController::class, 'obtenerComprasPorPeriodo']);
+Route::get('/compras/proveedor/compraspormes/{num_ruc}', [ComprasController::class, 'ComprasPorMesporPro']);
+
+// Ruta para listar VENTAS SIRE
+Route::apiResource('ventas', VentasController::class);
+Route::get('/ventas/ruc/{numRuc}', [VentasController::class, 'getVentasPorRuc']);
+Route::get('/ventasmensual/pordia', [VentasController::class, 'ventasPorDiaMesActual']);
+Route::get('/ventasmensual/pormes', [VentasController::class, 'ventasTotalesMes']);
+Route::get('/ventasmensual/por-periodo', [VentasController::class, 'obtenerVentasPorPeriodo']);
+Route::get('/resumen-ventas/calcular', [VentaResumenController::class, 'calcularResumenVentas']);
+Route::apiResource('resumen-ventas', VentaResumenController::class);
+
+// Obtener la EMPRESA seleccionada
+Route::post('/seleccion-empresa', [SelectEmpresaController::class, 'store']);
+Route::get('/seleccion-empresa/{id}', [SelectEmpresaController::class, 'show']);
+Route::put('/empresas/{empresa}/datos', [EmpresaDataController::class, 'updateEmpresaData']);
+// Lista de empresas por usuario
+Route::apiResource('empresayusuario', UserEmpresaController::class);
+
+
+// Obtener PERIODOS SIRE
+Route::apiResource('periodos', PeriodoController::class);
+Route::post('/guardarperiodos/{id}', [PeriodoController::class, 'guardar']);
+Route::get('/periodosporruc', [PeriodoController::class, 'obtenerEjerciciosFiscales']);
+// Reporte de Cumplimiento SIRE
+Route::apiResource('/reportecumplimiento/resumen', ReporteResumenController::class);
+Route::apiResource('/reportecumplimiento/detalleresumen', ReporteResumenDetalleController::class);
+
+Route::get('/sanctum/csrf-cookie', [CsrfCookieController::class, 'show']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {

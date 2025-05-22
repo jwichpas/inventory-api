@@ -18,7 +18,7 @@ class RegistroEmpresaController extends Controller
         $validator = Validator::make($request->all(), [
             'nombre_empresa' => 'required|string|max:255',
             'nombre_usuario' => 'required|string|max:255',
-            'ruc' => 'required|string|max:20|unique:empresas,ruc',
+            'ruc_empresa' => 'required|string|max:20|unique:empresas,ruc',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6',
         ]);
@@ -36,7 +36,7 @@ class RegistroEmpresaController extends Controller
             // Crear empresa
             $empresa = Empresa::create([
                 'nombre' => $request->nombre_empresa,
-                'ruc' => $request->ruc,
+                'ruc' => $request->ruc_empresa,
                 'direccion' => $request->direccion_empresa,
             ]);
 

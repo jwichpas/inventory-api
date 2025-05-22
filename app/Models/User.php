@@ -69,4 +69,9 @@ class User extends Authenticatable
             ...$abilities
         ]);
     }
+    public function empresas()
+    {
+        return $this->belongsToMany(Empresa::class, 'user_companies')
+                    ->withTimestamps(); // Solo incluye created_at y updated_at
+    }
 }
