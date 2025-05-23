@@ -1,14 +1,9 @@
 <?php
-<<<<<<< HEAD
 
 use App\Http\Controllers\Api\Empresa\SelectEmpresaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Api\EmpresaController;
 use App\Http\Controllers\Api\Empresa\EmpresaDataController;
-=======
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\Api\EmpresaController;
->>>>>>> develop
 use App\Http\Controllers\MovimientoController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
@@ -24,27 +19,20 @@ use App\Http\Controllers\Api\Inventario\AlmacenController;
 use App\Http\Controllers\Api\Inventario\AlmacenStockController;
 use App\Http\Controllers\Api\Inventario\MovimientoCabeceraController;
 use App\Http\Controllers\Api\Inventario\MovimientoDetalleController;
-<<<<<<< HEAD
 use App\Http\Controllers\Api\Sire\ComprasController;
 use App\Http\Controllers\Api\Sire\PeriodoController;
 use App\Http\Controllers\Api\Sire\ReporteResumenController;
 use App\Http\Controllers\Api\Sire\ReporteResumenDetalleController;
 use App\Http\Controllers\Api\Sire\VentaResumenController;
-=======
->>>>>>> develop
 use App\Http\Controllers\Api\TablaGeneral\TipoDocumentoController;
 use App\Http\Controllers\Api\TablaGeneral\TipoOperacionPleController;
 use App\Http\Controllers\Api\TablaGeneral\TipoPrecioUnitarioController;
 use App\Http\Controllers\Api\TablaGeneral\TipoAfectacionIgvController;
 use App\Http\Controllers\Api\TablaGeneral\TipoOperacionController;
-<<<<<<< HEAD
 use App\Http\Controllers\Api\Sire\VentasController;
 use App\Models\Sire\SireResumenVentas;
 use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
 use App\Http\Controllers\Api\UserEmpresaController;
-=======
-
->>>>>>> develop
 
 Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/login', [AuthController::class, 'login']);
@@ -69,7 +57,6 @@ Route::apiResource('tipo-precio-unitario-fe', TipoPrecioUnitarioController::clas
 Route::apiResource('catalogo-fe-07', TipoAfectacionIgvController::class);
 Route::apiResource('catalogo-fe-17', TipoOperacionController::class);
 
-<<<<<<< HEAD
 //Categorias de productos
 Route::post('/categories/validate-code', [CategoryController::class, 'validateCode']);
 Route::post('/brands/validate-code-brand', [BrandController::class, 'validateCode']);
@@ -108,8 +95,6 @@ Route::apiResource('/reportecumplimiento/detalleresumen', ReporteResumenDetalleC
 
 Route::get('/sanctum/csrf-cookie', [CsrfCookieController::class, 'show']);
 
-=======
->>>>>>> develop
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
