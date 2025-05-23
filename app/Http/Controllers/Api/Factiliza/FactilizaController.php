@@ -1,7 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api\Factiliza;
+/* namespace App\Http\Controllers\Api\Inventario; */
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http; // Usamos HTTP Client de Laravel
 
@@ -27,7 +29,7 @@ class FactilizaController extends Controller
         $url = "https://api.factiliza.com/v1/sunat/xml/{$numRuc}-{$tipoDocumento}-{$numSerieComprobante}-{$numDocumentoComprobante}";
 
         // Tu token de Factiliza (guárdalo de preferencia en .env)
-        $token = env('FACTILIZA_TOKEN');
+        $token = env('TOKEN_FACTILIZA');
         // Si no tienes el token en .env, puedes usar el siguiente código para obtenerlo
 
 
@@ -36,9 +38,155 @@ class FactilizaController extends Controller
 
         // Devolver respuesta (puedes adaptarla según tu necesidad)
         if ($response->successful()) {
-            // Si quieres devolver el XML puro
-            return response($response->body(), 200)
-                ->header('Content-Type', $response->header('Content-Type'));
+            $json = $response->json();
+
+            // Verificamos que existe el campo data
+            if (isset($json['data'])) {
+                $zipData = base64_decode($json['data']);
+
+                // Guardamos temporalmente el archivo ZIP
+                $tmpZip = tempnam(sys_get_temp_dir(), 'factiliza_zip_');
+                file_put_contents($tmpZip, $zipData);
+
+                $zip = new \ZipArchive;
+                if ($zip->open($tmpZip) === TRUE) {
+                    // Asumimos que solo hay un archivo XML dentro del ZIP
+                    $xmlContent = null;
+                    for ($i = 0; $i < $zip->numFiles; $i++) {
+                        $filename = $zip->getNameIndex($i);
+                        if (strtolower(pathinfo($filename, PATHINFO_EXTENSION)) === 'xml') {
+                            $xmlContent = $zip->getFromIndex($i);
+                            break;
+                        }
+                    }
+                    $zip->close();
+                    unlink($tmpZip); // Eliminar el archivo temporal
+
+                    if ($xmlContent) {
+                        // Retornar el XML como texto
+                        return response($xmlContent, 200)
+                            ->header('Content-Type', 'application/xml');
+                    } else {
+                        return response()->json([
+                            'error' => 'No se encontró archivo XML en el ZIP.'
+                        ], 500);
+                    }
+                } else {
+                    return response()->json([
+                        'error' => 'No se pudo abrir el archivo ZIP.'
+                    ], 500);
+                }
+            } else {
+                return response()->json([
+                    'error' => 'No se encontró el campo data en la respuesta.'
+                ], 500);
+            }
+        } else {
+            return response()->json([
+                'error' => 'Error consultando Factiliza',
+                'message' => $response->body()
+            ], $response->status());
+        }
+    }
+    public function getPdf(Request $request)
+    {
+        $request->validate([
+            'numRuc' => 'required|string',
+            'tipoDocumento' => 'required|string',
+            'numSerieComprobante' => 'required|string',
+            'numDocumentoComprobante' => 'required|string',
+        ]);
+
+        $numRuc = $request->input('numRuc');
+        $tipoDocumento = $request->input('tipoDocumento');
+        $numSerieComprobante = $request->input('numSerieComprobante');
+        $numDocumentoComprobante = $request->input('numDocumentoComprobante');
+
+        $url = "https://api.factiliza.com/v1/sunat/pdf/{$numRuc}-{$tipoDocumento}-{$numSerieComprobante}-{$numDocumentoComprobante}";
+        $token = env('TOKEN_FACTILIZA');
+
+        $response = Http::withToken($token)->get($url);
+
+        if ($response->successful()) {
+            $json = $response->json();
+
+            if (isset($json['data'])) {
+                // El PDF viene en base64, lo decodificamos
+                $pdfData = base64_decode($json['data']);
+
+                // Puedes devolver el PDF directamente
+                return response($pdfData, 200)
+                    ->header('Content-Type', 'application/pdf')
+                    ->header('Content-Disposition', 'inline; filename="documento.pdf"');
+            } else {
+                return response()->json([
+                    'error' => 'No se encontró el campo data en la respuesta.'
+                ], 500);
+            }
+        } else {
+            return response()->json([
+                'error' => 'Error consultando Factiliza',
+                'message' => $response->body()
+            ], $response->status());
+        }
+    }
+    public function getGuiaXml(Request $request)
+    {
+        $request->validate([
+            'numRuc' => 'required|string',
+            'numSerieComprobante' => 'required|string',
+            'numDocumentoComprobante' => 'required|string',
+        ]);
+
+        $numRuc = $request->input('numRuc');
+        $numSerieComprobante = $request->input('numSerieComprobante');
+        $numDocumentoComprobante = $request->input('numDocumentoComprobante');
+
+        $url = "https://api.factiliza.com/v1/sunat/guia/xml/{$numRuc}-{$numSerieComprobante}-{$numDocumentoComprobante}";
+        $token = env('TOKEN_FACTILIZA');
+
+        $response = Http::withToken($token)->get($url);
+
+        if ($response->successful()) {
+            $json = $response->json();
+
+            if (isset($json['data'])) {
+                $zipData = base64_decode($json['data']);
+
+                $tmpZip = tempnam(sys_get_temp_dir(), 'factiliza_guia_zip_');
+                file_put_contents($tmpZip, $zipData);
+
+                $zip = new \ZipArchive;
+                if ($zip->open($tmpZip) === TRUE) {
+                    $xmlContent = null;
+                    for ($i = 0; $i < $zip->numFiles; $i++) {
+                        $filename = $zip->getNameIndex($i);
+                        if (strtolower(pathinfo($filename, PATHINFO_EXTENSION)) === 'xml') {
+                            $xmlContent = $zip->getFromIndex($i);
+                            break;
+                        }
+                    }
+                    $zip->close();
+                    unlink($tmpZip);
+
+                    if ($xmlContent) {
+                        return response($xmlContent, 200)
+                            ->header('Content-Type', 'application/xml');
+                    } else {
+                        return response()->json([
+                            'error' => 'No se encontró archivo XML en el ZIP.'
+                        ], 500);
+                    }
+                } else {
+                    return response()->json([
+                        'error' => 'No se pudo abrir el archivo ZIP.'
+                    ], 500);
+                }
+            } else {
+                return response()->json([
+                    'error' => 'No se encontró el campo data en la respuesta.'
+                ], 500);
+            }
         } else {
             return response()->json([
                 'error' => 'Error consultando Factiliza',

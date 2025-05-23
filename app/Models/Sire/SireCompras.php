@@ -86,4 +86,8 @@ class SireCompras extends Model
     {
         return $this->hasOne(SireComprasAuditoria::class, 'compra_id');
     }
+    public function archivo()
+    {
+        return $this->hasMany(SireComprasArchivo::class, 'compra_id');
+    }
 }

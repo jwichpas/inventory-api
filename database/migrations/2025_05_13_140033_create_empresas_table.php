@@ -16,7 +16,6 @@ return new class extends Migration
             $table->string('nombre', 100)->unique();
             $table->string('ruc', 20)->unique();
             $table->string('direccion', 255)->nullable();
-<<<<<<< HEAD
             $table->string('telefono')->nullable();
             $table->string('correo')->nullable();
             $table->string('usuario_sol')->nullable();
@@ -40,8 +39,6 @@ return new class extends Migration
             $table->string('num_')->nullable();
 
 
-=======
->>>>>>> develop
             $table->timestamps();
         });
     }

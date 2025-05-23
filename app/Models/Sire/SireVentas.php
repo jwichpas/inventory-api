@@ -4,6 +4,7 @@ namespace App\Models\Sire;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Sire\SireVentasDocModificados;
+use App\Models\Sire\SireVentasArchivo;
 
 class SireVentas extends Model
 {
@@ -61,5 +62,9 @@ class SireVentas extends Model
     public function documentoMods()
     {
         return $this->hasMany(SireVentasDocModificados::class);
+    }
+    public function archivo()
+    {
+        return $this->hasMany(SireVentasArchivo::class, 'venta_id');
     }
 }

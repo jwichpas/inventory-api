@@ -339,4 +339,17 @@ class VentasController extends Controller
         $venta->delete(); // Eliminar la venta
         return response()->json(null, 204);
     }
+    public function faltantes(Request $request)
+    {
+        // Devuelve los IDs de las ventas que NO tienen ningún registro en ventas_archivos
+        // Devuelve las ventas que NO tienen ningún registro en ventas_archivos
+        $ventas = SireVentas::whereDoesntHave('archivo')
+            ->select('id', 'cod_tipo_cdp', 'num_serie_cdp', 'num_cdp', 'num_doc_identidad_proveedor')
+            ->where('cod_tipo_cdp', '=', '01')
+            ->get();
+
+        return response()->json([
+            'ventas_sin_archivos' => $ventas
+        ]);
+    }
 }

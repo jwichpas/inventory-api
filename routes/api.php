@@ -34,6 +34,8 @@ use App\Models\Sire\SireResumenVentas;
 use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
 use App\Http\Controllers\Api\UserEmpresaController;
 use App\Http\Controllers\Api\Factiliza\FactilizaController;
+use App\Http\Controllers\Api\Sire\ComprasArchivoController;
+use App\Http\Controllers\Api\Sire\VentasArchivoController;
 
 
 Route::post('/auth/register', [AuthController::class, 'register']);
@@ -69,6 +71,9 @@ Route::get('/compras/ruc/{ruc}', [ComprasController::class, 'comprasPorRuc']);
 Route::get('/compras/proveedor', [ComprasController::class, 'comprasPorProveedor']);
 Route::get('/compras-sire/por-periodo', [ComprasController::class, 'obtenerComprasPorPeriodo']);
 Route::get('/compras/proveedor/compraspormes/{num_ruc}', [ComprasController::class, 'ComprasPorMesporPro']);
+Route::get('/compras/facturas/compras-faltantes', [ComprasController::class, 'faltantes']);
+
+Route::apiResource('compras-archivos/xml', ComprasArchivoController::class);
 
 // Ruta para listar VENTAS SIRE
 Route::apiResource('ventas', VentasController::class);
@@ -76,8 +81,11 @@ Route::get('/ventas/ruc/{numRuc}', [VentasController::class, 'getVentasPorRuc'])
 Route::get('/ventasmensual/pordia', [VentasController::class, 'ventasPorDiaMesActual']);
 Route::get('/ventasmensual/pormes', [VentasController::class, 'ventasTotalesMes']);
 Route::get('/ventasmensual/por-periodo', [VentasController::class, 'obtenerVentasPorPeriodo']);
+Route::get('/ventas/facturas/ventas-faltantes', [VentasController::class, 'faltantes']);
 Route::get('/resumen-ventas/calcular', [VentaResumenController::class, 'calcularResumenVentas']);
 Route::apiResource('resumen-ventas', VentaResumenController::class);
+
+Route::apiResource('ventas-archivos/xml', VentasArchivoController::class);
 
 // Obtener la EMPRESA seleccionada
 Route::post('/seleccion-empresa', [SelectEmpresaController::class, 'store']);
@@ -87,6 +95,8 @@ Route::put('/empresas/{empresa}/datos', [EmpresaDataController::class, 'updateEm
 Route::apiResource('empresayusuario', UserEmpresaController::class);
 // FACTILIZA
 Route::get('/factiliza/xml', [FactilizaController::class, 'getXml']);
+Route::get('/factiliza/pdf', [FactilizaController::class, 'getPdf']);
+Route::get('/factiliza/guia/xml', [FactilizaController::class, 'getGuiaXml']);
 
 // Obtener PERIODOS SIRE
 Route::apiResource('periodos', PeriodoController::class);

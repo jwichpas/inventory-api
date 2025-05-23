@@ -381,7 +381,7 @@ class ComprasController extends Controller
                 ], 400);
             }
             // Consultar las compras filtradas por periodo
-            $compras = SireCompras::with(['tipoCambio', 'montos', 'documentosModificados', 'auditoria'])->select(
+            $compras = SireCompras::with(['tipoCambio', 'montos', 'documentosModificados', 'auditoria','archivo'])->select(
                 'id',
                 'num_doc_identidad_proveedor',
                 'nom_razon_social_proveedor',
@@ -545,6 +545,19 @@ class ComprasController extends Controller
         return response()->json([
             'message' => 'Datos agrupados por año y mes.',
             'data' => $resultado
+        ]);
+    }
+
+    public function faltantes(Request $request)
+    {
+        // Devuelve los IDs de las ventas que NO tienen ningún registro en ventas_archivos
+        // Devuelve las ventas que NO tienen ningún registro en ventas_archivos
+        $ventas = SireCompras::whereDoesntHave('archivo')
+            ->select('id', 'cod_tipo_cdp', 'num_serie_cdp', 'num_cdp', 'num_doc_identidad_proveedor')
+            ->get();
+
+        return response()->json([
+            'compras_sin_archivos' => $ventas
         ]);
     }
 }
