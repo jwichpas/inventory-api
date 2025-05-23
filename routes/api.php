@@ -33,6 +33,8 @@ use App\Http\Controllers\Api\Sire\VentasController;
 use App\Models\Sire\SireResumenVentas;
 use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
 use App\Http\Controllers\Api\UserEmpresaController;
+use App\Http\Controllers\Api\Factiliza\FactilizaController;
+
 
 Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/login', [AuthController::class, 'login']);
@@ -83,7 +85,8 @@ Route::get('/seleccion-empresa/{id}', [SelectEmpresaController::class, 'show']);
 Route::put('/empresas/{empresa}/datos', [EmpresaDataController::class, 'updateEmpresaData']);
 // Lista de empresas por usuario
 Route::apiResource('empresayusuario', UserEmpresaController::class);
-
+// FACTILIZA
+Route::get('/factiliza/xml', [FactilizaController::class, 'getXml']);
 
 // Obtener PERIODOS SIRE
 Route::apiResource('periodos', PeriodoController::class);
