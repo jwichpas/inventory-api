@@ -42,69 +42,6 @@ Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/login', [AuthController::class, 'login']);
 
 Route::post('/registrar-empresa', [RegistroEmpresaController::class, 'registrar']);
-Route::apiResource('empresas', EmpresaController::class);
-Route::apiResource('unidad-medida', UnidadMedidaController::class);
-Route::apiResource('brands', BrandController::class);
-Route::apiResource('categories', CategoryController::class);
-Route::apiResource('products', ProductController::class);
-Route::apiResource('variantes', VarianteProductoController::class);
-Route::apiResource('lotes', LoteController::class);
-Route::apiResource('almacenes', AlmacenController::class);
-Route::apiResource('almacen-stock', AlmacenStockController::class)->except(['show', 'update', 'destroy']);
-Route::put('almacen-stock/{id_variante}/{id_almacen}/{id_lote}', [AlmacenStockController::class, 'update']);
-Route::delete('almacen-stock/{id_variante}/{id_almacen}/{id_lote}', [AlmacenStockController::class, 'destroy']);
-Route::apiResource('movimiento-cabecera', MovimientoCabeceraController::class);
-Route::apiResource('movimiento-detalle', MovimientoDetalleController::class);
-Route::apiResource('tipo-documento', TipoDocumentoController::class);
-Route::apiResource('tipo-operacion-ple', TipoOperacionPleController::class);
-Route::apiResource('tipo-precio-unitario-fe', TipoPrecioUnitarioController::class);
-Route::apiResource('catalogo-fe-07', TipoAfectacionIgvController::class);
-Route::apiResource('catalogo-fe-17', TipoOperacionController::class);
-
-//Categorias de productos
-Route::post('/categories/validate-code', [CategoryController::class, 'validateCode']);
-Route::post('/brands/validate-code-brand', [BrandController::class, 'validateCode']);
-
-// Ruta para listar COMPRAS SIRE
-Route::apiResource('compras', ComprasController::class);
-Route::get('/compras/ruc/{ruc}', [ComprasController::class, 'comprasPorRuc']);
-Route::get('/compras/proveedor', [ComprasController::class, 'comprasPorProveedor']);
-Route::get('/compras-sire/por-periodo', [ComprasController::class, 'obtenerComprasPorPeriodo']);
-Route::get('/compras/proveedor/compraspormes/{num_ruc}', [ComprasController::class, 'ComprasPorMesporPro']);
-Route::get('/compras/facturas/compras-faltantes', [ComprasController::class, 'faltantes']);
-
-Route::apiResource('compras-archivos/xml', ComprasArchivoController::class);
-
-// Ruta para listar VENTAS SIRE
-Route::apiResource('ventas', VentasController::class);
-Route::get('/ventas/ruc/{numRuc}', [VentasController::class, 'getVentasPorRuc']);
-Route::get('/ventasmensual/pordia', [VentasController::class, 'ventasPorDiaMesActual']);
-Route::get('/ventasmensual/pormes', [VentasController::class, 'ventasTotalesMes']);
-Route::get('/ventasmensual/por-periodo', [VentasController::class, 'obtenerVentasPorPeriodo']);
-Route::get('/ventas/facturas/ventas-faltantes', [VentasController::class, 'faltantes']);
-Route::get('/resumen-ventas/calcular', [VentaResumenController::class, 'calcularResumenVentas']);
-Route::apiResource('resumen-ventas', VentaResumenController::class);
-
-Route::apiResource('ventas-archivos/xml', VentasArchivoController::class);
-
-// Obtener la EMPRESA seleccionada
-Route::post('/seleccion-empresa', [SelectEmpresaController::class, 'store']);
-Route::get('/seleccion-empresa/{id}', [SelectEmpresaController::class, 'show']);
-Route::put('/empresas/{empresa}/datos', [EmpresaDataController::class, 'updateEmpresaData']);
-// Lista de empresas por usuario
-Route::apiResource('empresayusuario', UserEmpresaController::class);
-// FACTILIZA
-Route::get('/factiliza/xml', [FactilizaController::class, 'getXml']);
-Route::get('/factiliza/pdf', [FactilizaController::class, 'getPdf']);
-Route::get('/factiliza/guia/xml', [FactilizaController::class, 'getGuiaXml']);
-
-// Obtener PERIODOS SIRE
-Route::apiResource('periodos', PeriodoController::class);
-Route::post('/guardarperiodos/{id}', [PeriodoController::class, 'guardar']);
-Route::get('/periodosporruc', [PeriodoController::class, 'obtenerEjerciciosFiscales']);
-// Reporte de Cumplimiento SIRE
-Route::apiResource('/reportecumplimiento/resumen', ReporteResumenController::class);
-Route::apiResource('/reportecumplimiento/detalleresumen', ReporteResumenDetalleController::class);
 
 Route::get('/sanctum/csrf-cookie', [CsrfCookieController::class, 'show']);
 
@@ -115,8 +52,70 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/auth/logout', [AuthController::class, 'logout']);
 
-
     // Rutas protegidas
+    Route::apiResource('empresas', EmpresaController::class);
+    Route::apiResource('unidad-medida', UnidadMedidaController::class);
+    Route::apiResource('brands', BrandController::class);
+    Route::apiResource('categories', CategoryController::class);
+    Route::apiResource('products', ProductController::class);
+    Route::apiResource('variantes', VarianteProductoController::class);
+    Route::apiResource('lotes', LoteController::class);
+    Route::apiResource('almacenes', AlmacenController::class);
+    Route::apiResource('almacen-stock', AlmacenStockController::class)->except(['show', 'update', 'destroy']);
+    Route::put('almacen-stock/{id_variante}/{id_almacen}/{id_lote}', [AlmacenStockController::class, 'update']);
+    Route::delete('almacen-stock/{id_variante}/{id_almacen}/{id_lote}', [AlmacenStockController::class, 'destroy']);
+    Route::apiResource('movimiento-cabecera', MovimientoCabeceraController::class);
+    Route::apiResource('movimiento-detalle', MovimientoDetalleController::class);
+    Route::apiResource('tipo-documento', TipoDocumentoController::class);
+    Route::apiResource('tipo-operacion-ple', TipoOperacionPleController::class);
+    Route::apiResource('tipo-precio-unitario-fe', TipoPrecioUnitarioController::class);
+    Route::apiResource('catalogo-fe-07', TipoAfectacionIgvController::class);
+    Route::apiResource('catalogo-fe-17', TipoOperacionController::class);
+
+    //Categorias de productos
+    Route::post('/categories/validate-code', [CategoryController::class, 'validateCode']);
+    Route::post('/brands/validate-code-brand', [BrandController::class, 'validateCode']);
+
+    // Ruta para listar COMPRAS SIRE
+    Route::apiResource('compras', ComprasController::class);
+    Route::get('/compras/ruc/{ruc}', [ComprasController::class, 'comprasPorRuc']);
+    Route::get('/compras/proveedor', [ComprasController::class, 'comprasPorProveedor']);
+    Route::get('/compras-sire/por-periodo', [ComprasController::class, 'obtenerComprasPorPeriodo']);
+    Route::get('/compras/proveedor/compraspormes/{num_ruc}', [ComprasController::class, 'ComprasPorMesporPro']);
+    Route::get('/compras/facturas/compras-faltantes', [ComprasController::class, 'faltantes']);
+
+    Route::apiResource('compras-archivos/xml', ComprasArchivoController::class);
+
+    // Ruta para listar VENTAS SIRE
+    Route::apiResource('ventas', VentasController::class);
+    Route::get('/ventas/ruc/{numRuc}', [VentasController::class, 'getVentasPorRuc']);
+    Route::get('/ventasmensual/pordia', [VentasController::class, 'ventasPorDiaMesActual']);
+    Route::get('/ventasmensual/pormes', [VentasController::class, 'ventasTotalesMes']);
+    Route::get('/ventasmensual/por-periodo', [VentasController::class, 'obtenerVentasPorPeriodo']);
+    Route::get('/ventas/facturas/ventas-faltantes', [VentasController::class, 'faltantes']);
+    Route::get('/resumen-ventas/calcular', [VentaResumenController::class, 'calcularResumenVentas']);
+    Route::apiResource('resumen-ventas', VentaResumenController::class);
+
+    Route::apiResource('ventas-archivos/xml', VentasArchivoController::class);
+
+    // Obtener la EMPRESA seleccionada
+    Route::post('/seleccion-empresa', [SelectEmpresaController::class, 'store']);
+    Route::get('/seleccion-empresa/{id}', [SelectEmpresaController::class, 'show']);
+    Route::put('/empresas/{empresa}/datos', [EmpresaDataController::class, 'updateEmpresaData']);
+    // Lista de empresas por usuario
+    Route::apiResource('empresayusuario', UserEmpresaController::class);
+    // FACTILIZA
+    Route::get('/factiliza/xml', [FactilizaController::class, 'getXml']);
+    Route::get('/factiliza/pdf', [FactilizaController::class, 'getPdf']);
+    Route::get('/factiliza/guia/xml', [FactilizaController::class, 'getGuiaXml']);
+
+    // Obtener PERIODOS SIRE
+    Route::apiResource('periodos', PeriodoController::class);
+    Route::post('/guardarperiodos/{id}', [PeriodoController::class, 'guardar']);
+    Route::get('/periodosporruc', [PeriodoController::class, 'obtenerEjerciciosFiscales']);
+    // Reporte de Cumplimiento SIRE
+    Route::apiResource('/reportecumplimiento/resumen', ReporteResumenController::class);
+    Route::apiResource('/reportecumplimiento/detalleresumen', ReporteResumenDetalleController::class);
 
     /* Route::apiResource('movimientos', MovimientoController::class); */
 });

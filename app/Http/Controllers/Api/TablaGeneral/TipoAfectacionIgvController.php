@@ -6,12 +6,15 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\TablaGeneral\TipoAfectacionIgv;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Cache;
 
 class TipoAfectacionIgvController extends Controller
 {
     public function index()
     {
-        $tipos = TipoAfectacionIgv::all();
+        $tipos = Cache::remember('tipos_afectacion_igv_all', 1440, function () {
+            return TipoAfectacionIgv::all();
+        });
         return response()->json($tipos);
     }
 
@@ -31,6 +34,7 @@ class TipoAfectacionIgvController extends Controller
             $request->all()
         );
 
+        Cache::forget('tipos_afectacion_igv_all');
         return response()->json($tipo, 201);
     }
 
@@ -59,6 +63,7 @@ class TipoAfectacionIgvController extends Controller
         }
 
         $tipo->update($request->all());
+        Cache::forget('tipos_afectacion_igv_all');
         return response()->json($tipo);
     }
 
@@ -70,6 +75,7 @@ class TipoAfectacionIgvController extends Controller
         }
 
         $tipo->delete();
+        Cache::forget('tipos_afectacion_igv_all');
         return response()->json(['message' => 'Tipo de afectación IGV eliminado correctamente']);
     }
 }

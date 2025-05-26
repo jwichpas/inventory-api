@@ -12,7 +12,7 @@ class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::with(['empresa', 'brand', 'categorias', 'variantes'])->get();
+        $products = Product::with(['empresa:id,nombre,ruc', 'brand:id,name', 'categorias:id,name', 'variantes'])->paginate(15);
         return response()->json($products);
     }
 
@@ -163,7 +163,7 @@ class ProductController extends Controller
 
     public function show($id)
     {
-        $product = Product::with(['empresa', 'brand', 'categorias', 'variantes'])->find($id);
+        $product = Product::with(['empresa:id,nombre,ruc', 'brand:id,name', 'categorias:id,name', 'variantes'])->find($id);
         if (!$product) {
             return response()->json(['message' => 'Producto no encontrado'], 404);
         }

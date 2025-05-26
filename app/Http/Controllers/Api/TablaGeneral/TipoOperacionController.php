@@ -6,12 +6,15 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\TablaGeneral\TipoOperacion;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Cache;
 
 class TipoOperacionController extends Controller
 {
     public function index()
     {
-        $tipos = TipoOperacion::all();
+        $tipos = Cache::remember('tipos_operacion_all', 1440, function () {
+            return TipoOperacion::all();
+        });
         return response()->json($tipos);
     }
 
@@ -31,6 +34,7 @@ class TipoOperacionController extends Controller
             $request->all()
         );
 
+        Cache::forget('tipos_operacion_all');
         return response()->json($tipo, 201);
     }
 
@@ -59,6 +63,7 @@ class TipoOperacionController extends Controller
         }
 
         $tipo->update($request->all());
+        Cache::forget('tipos_operacion_all');
         return response()->json($tipo);
     }
 
@@ -70,6 +75,7 @@ class TipoOperacionController extends Controller
         }
 
         $tipo->delete();
+        Cache::forget('tipos_operacion_all');
         return response()->json(['message' => 'Tipo de operación FE eliminado correctamente']);
     }
 }

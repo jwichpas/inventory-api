@@ -15,17 +15,19 @@ class UserEmpresaController extends Controller
     public function index()
     {
         // Obtener todos los usuarios con sus empresas relacionadas
-        $users = User::with('empresas')->get();
+        $users = User::with('empresas:id,nombre,ruc')->paginate(15);
 
         // Transformar los datos para agrupar por usuario
-        $groupedData = $users->map(function ($user) {
+        // Nota: La paginación devuelve un LengthAwarePaginator, accedemos a los items con $users->items()
+        $groupedData = collect($users->items())->map(function ($user) {
             return [
                 'user_id' => $user->id,
                 'user_name' => $user->name,
                 'empresas' => $user->empresas->map(function ($empresa) {
                     return [
                         'empresa_id' => $empresa->id,
-                        'empresa_nombre' => $empresa->razon_social,
+                        'empresa_nombre' => $empresa->nombre, // Cambiado de razon_social a nombre
+                        'ruc' => $empresa->ruc, // Añadido ruc si está disponible
                         'created_at' => $empresa->pivot->created_at,
                         'updated_at' => $empresa->pivot->updated_at,
                     ];
@@ -36,6 +38,14 @@ class UserEmpresaController extends Controller
         return response()->json([
             'message' => 'Relaciones entre usuarios y empresas agrupadas correctamente.',
             'data' => $groupedData,
+            'pagination' => [
+                'total' => $users->total(),
+                'per_page' => $users->perPage(),
+                'current_page' => $users->currentPage(),
+                'last_page' => $users->lastPage(),
+                'from' => $users->firstItem(),
+                'to' => $users->lastItem(),
+            ]
         ], 200);
     }
 
@@ -79,7 +89,7 @@ class UserEmpresaController extends Controller
     public function show($userId)
     {
         // Buscar el usuario por su ID y cargar sus empresas relacionadas
-        $user = User::with('empresas')->find($userId);
+        $user = User::with('empresas:id,nombre,ruc')->find($userId);
 
         // Si no se encuentra el usuario, devolver un error 404
         if (!$user) {
@@ -93,7 +103,7 @@ class UserEmpresaController extends Controller
             return [
                 'empresa_id' => $empresa->id,
                 'ruc' => $empresa->ruc,
-                'empresa_nombre' => $empresa->nombre,
+                'empresa_nombre' => $empresa->nombre, // Asegurado que se usa nombre
                 'created_at' => $empresa->pivot->created_at,
                 'updated_at' => $empresa->pivot->updated_at,
             ];

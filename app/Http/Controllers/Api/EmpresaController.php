@@ -11,7 +11,7 @@ class EmpresaController extends Controller
 {
     public function index()
     {
-        $empresas = Empresa::all();
+        $empresas = Empresa::with(['condiciones', 'tributos'])->paginate(15);
         return response()->json($empresas);
     }
 
@@ -33,7 +33,7 @@ class EmpresaController extends Controller
 
     public function show($id)
     {
-        $empresa = Empresa::find($id);
+        $empresa = Empresa::with(['condiciones', 'tributos'])->find($id);
         if (!$empresa) {
             return response()->json(['message' => 'Empresa no encontrada'], 404);
         }

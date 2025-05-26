@@ -6,12 +6,15 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\TablaGeneral\TipoDocumento;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Cache;
 
 class TipoDocumentoController extends Controller
 {
     public function index()
     {
-        $tipos = TipoDocumento::all();
+        $tipos = Cache::remember('tipos_documento_all', 1440, function () {
+            return TipoDocumento::all();
+        });
         return response()->json($tipos);
     }
 
@@ -32,6 +35,7 @@ class TipoDocumentoController extends Controller
             $request->all()
         );
 
+        Cache::forget('tipos_documento_all');
         return response()->json($tipo, 201);
     }
 
@@ -61,6 +65,7 @@ class TipoDocumentoController extends Controller
         }
 
         $tipo->update($request->all());
+        Cache::forget('tipos_documento_all');
         return response()->json($tipo);
     }
 
@@ -72,6 +77,7 @@ class TipoDocumentoController extends Controller
         }
 
         $tipo->delete();
+        Cache::forget('tipos_documento_all');
         return response()->json(['message' => 'Tipo de documento eliminado correctamente']);
     }
 }

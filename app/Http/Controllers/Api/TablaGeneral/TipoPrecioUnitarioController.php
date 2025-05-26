@@ -6,12 +6,15 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\TablaGeneral\TipoPrecioUnitario;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Cache;
 
 class TipoPrecioUnitarioController extends Controller
 {
     public function index()
     {
-        $tipos = TipoPrecioUnitario::all();
+        $tipos = Cache::remember('tipos_precio_unitario_all', 1440, function () {
+            return TipoPrecioUnitario::all();
+        });
         return response()->json($tipos);
     }
 
@@ -31,6 +34,7 @@ class TipoPrecioUnitarioController extends Controller
             $request->all()
         );
 
+        Cache::forget('tipos_precio_unitario_all');
         return response()->json($tipo, 201);
     }
 
@@ -59,6 +63,7 @@ class TipoPrecioUnitarioController extends Controller
         }
 
         $tipo->update($request->all());
+        Cache::forget('tipos_precio_unitario_all');
         return response()->json($tipo);
     }
 
@@ -70,6 +75,7 @@ class TipoPrecioUnitarioController extends Controller
         }
 
         $tipo->delete();
+        Cache::forget('tipos_precio_unitario_all');
         return response()->json(['message' => 'Tipo de precio unitario eliminado correctamente']);
     }
 }
