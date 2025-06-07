@@ -15,10 +15,19 @@ class UnidadMedidaController extends Controller
         return response()->json($unidades);
     }
 
+    public function umedidaxempresa($idEmpresa)
+    {
+        $categories = UnidadMedida::with('empresa')
+            ->where('id_empresa', $idEmpresa)
+            ->get();
+
+        return response()->json($categories);
+    }
+
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'codigo_sunat' => 'required|string|max:255|unique:unidad_medida',
+            'codigo_sunat' => 'required|string|max:255|unique:unidad_medidas',
             'nombre_sunat' => 'required|string|max:255',
             'simbolo' => 'required|string|max:255',
         ]);

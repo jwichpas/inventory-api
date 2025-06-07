@@ -7,6 +7,7 @@ use App\Models\Sire\SireComprasTipoCambio;
 use App\Models\Sire\SireComprasMonto;
 use App\Models\Sire\SireComprasDocModificados;
 use App\Models\Sire\SireComprasAuditoria;
+use App\Models\Sire\SireComprasClasificacion;
 
 class SireCompras extends Model
 {
@@ -89,5 +90,17 @@ class SireCompras extends Model
     public function archivo()
     {
         return $this->hasMany(SireComprasArchivo::class, 'compra_id');
+    }
+    public function items()
+    {
+        return $this->hasMany(SireComprasItem::class, 'compra_id');
+    }
+    public function DespatchAdvice()
+    {
+        return $this->hasMany(SireComprasDespatchAdvice::class, 'id_compra');
+    }
+    public function clasificaciones()
+    {
+        return $this->hasMany(SireComprasClasificacion::class, 'compra_id');
     }
 }

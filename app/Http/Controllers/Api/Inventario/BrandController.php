@@ -14,6 +14,14 @@ class BrandController extends Controller
         $brands = Brand::with('empresa')->get();
         return response()->json($brands);
     }
+    public function marcaxempresa($idEmpresa)
+    {
+        $brands = Brand::with('empresa')
+            ->where('id_empresa', $idEmpresa)
+            ->get();
+
+        return response()->json($brands);
+    }
 
     public function store(Request $request)
     {

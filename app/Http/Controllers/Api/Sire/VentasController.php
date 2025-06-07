@@ -235,7 +235,7 @@ class VentasController extends Controller
             )->where('per_periodo_tributario', $perPeriodo)
                 ->where('num_ruc', $perRuc)
                 ->orderBy('fec_emision', 'desc')
-                ->get();
+                ->paginate(20);
 
             // Validar que existan ventas para el periodo
             if ($ventas->isEmpty()) {

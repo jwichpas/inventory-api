@@ -61,7 +61,7 @@ class SireVentas extends Model
      */
     public function documentoMods()
     {
-        return $this->hasMany(SireVentasDocModificados::class);
+        return $this->hasMany(SireVentasDocModificados::class, 'venta_id');
     }
     public function archivo()
     {

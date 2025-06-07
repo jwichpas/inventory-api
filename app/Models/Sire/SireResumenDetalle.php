@@ -7,7 +7,7 @@ use App\Models\Empresa;
 
 class SireResumenDetalle extends Model
 {
-    protected $table = 'sire_detalle_resumens';
+    protected $table = 'sire_resumen_detalles';
     protected $primaryKey = 'id';
     protected $fillable = [
         'numRuc',

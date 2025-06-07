@@ -5,6 +5,7 @@ namespace App\Models\Inventario;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Empresa;
 use App\Models\Inventario\Product;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Categorie extends Model
 {
@@ -16,8 +17,8 @@ class Categorie extends Model
         return $this->belongsTo(Empresa::class, 'id_empresa');
     }
 
-    public function products()
+    public function products(): HasMany
     {
-        return $this->belongsToMany(Product::class, 'producto_categoria', 'id_categoria', 'id_producto');
+        return $this->hasMany(Product::class);
     }
 }

@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('image')->nullable();
             /* $table->foreignId('empresa_id')->constrained('empresas')->onDelete('cascade'); */
             $table->rememberToken();
+            $table->boolean('active')->default(true);
             $table->timestamps();
         });
 

@@ -18,6 +18,14 @@ class VarianteProduct extends Model
         'precio',
         'id_unidad_medida'
     ];
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
+    ];
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+    ];
 
     public function producto()
     {
@@ -31,12 +39,16 @@ class VarianteProduct extends Model
 
     public function atributos()
     {
-        return $this->belongsToMany(Atributos::class, 'atributos_variante', 'id_variante', 'id_atributo');
+        return $this->belongsToMany(Atributos::class, 'atributos_variante', 'id_variante', 'id_atributo')->withPivot('id_variante', 'id_atributo');
     }
 
     public function lotes()
     {
         return $this->hasMany(Lote::class, 'id_variante');
+    }
+    public function attributes()
+    {
+        return $this->belongsToMany(AtributosVariante::class, 'atributos_variante', 'id_variante', 'id_atributo');
     }
 
     public function stocks()

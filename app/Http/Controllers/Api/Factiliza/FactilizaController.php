@@ -151,6 +151,49 @@ class FactilizaController extends Controller
             $json = $response->json();
 
             if (isset($json['data'])) {
+                // El campo 'data' es un XML en base64, NO ZIP
+                $xmlContent = base64_decode($json['data']);
+                if ($xmlContent) {
+                    return response($xmlContent, 200)
+                        ->header('Content-Type', 'application/xml');
+                } else {
+                    return response()->json([
+                        'error' => 'No se pudo decodificar el XML.'
+                    ], 500);
+                }
+            } else {
+                return response()->json([
+                    'error' => 'No se encontró el campo data en la respuesta.'
+                ], 500);
+            }
+        } else {
+            return response()->json([
+                'error' => 'Error consultando Factiliza',
+                'message' => $response->body()
+            ], $response->status());
+        }
+    }
+    public function getGuiaXmlOld(Request $request)
+    {
+        $request->validate([
+            'numRuc' => 'required|string',
+            'numSerieComprobante' => 'required|string',
+            'numDocumentoComprobante' => 'required|string',
+        ]);
+
+        $numRuc = $request->input('numRuc');
+        $numSerieComprobante = $request->input('numSerieComprobante');
+        $numDocumentoComprobante = $request->input('numDocumentoComprobante');
+
+        $url = "https://api.factiliza.com/v1/sunat/guia/xml/{$numRuc}-{$numSerieComprobante}-{$numDocumentoComprobante}";
+        $token = env('TOKEN_FACTILIZA');
+
+        $response = Http::withToken($token)->get($url);
+
+        if ($response->successful()) {
+            $json = $response->json();
+
+            if (isset($json['data'])) {
                 $zipData = base64_decode($json['data']);
 
                 $tmpZip = tempnam(sys_get_temp_dir(), 'factiliza_guia_zip_');

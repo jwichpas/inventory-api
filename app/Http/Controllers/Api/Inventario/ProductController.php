@@ -7,32 +7,130 @@ use Illuminate\Http\Request;
 use App\Models\Inventario\Product;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use App\Models\Inventario\VarianteProduct;
+use App\Http\Resources\Product\ProductResource;
 
 class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::with(['empresa', 'brand', 'categorias', 'variantes'])->get();
+        $products = Product::with(['category', 'brand'])->paginate(20);
         return response()->json($products);
+    }
+
+    public function indexold(Request $request)
+    {
+        // Validar parámetros de consulta
+        $validated = $request->validate([
+            'search' => 'sometimes|string|max:100',
+            'brand_id' => 'sometimes|integer|exists:brands,id',
+            'category_id' => 'sometimes|integer|exists:categorias,id',
+            'per_page' => 'sometimes|integer|min:1|max:100',
+            'sort_by' => 'sometimes|string|in:name,created_at,updated_at',
+            'sort_dir' => 'sometimes|string|in:asc,desc'
+        ]);
+
+        // Construir consulta base con eager loading
+        $query = Product::with([
+            'empresa:id,nombre',
+            'brand:id,name',
+            'categorias:id,name',
+            'variantes' => function ($query) {
+                $query->select([
+                    'id',
+                    'id_producto',
+                    'sku',
+                    'codigo_sunat',
+                    'ean13',
+                    'ean14',
+                    'precio',
+                    'id_unidad_medida'
+                ]);
+            },
+            'variantes.atributos.tipoAtributo:id,name'
+        ]);
+
+        // Aplicar filtros
+        if (!empty($validated['search'])) {
+            $query->where(function ($q) use ($validated) {
+                $q->where('name', 'like', '%' . $validated['search'] . '%')
+                    ->orWhere('codigo', 'like', '%' . $validated['search'] . '%')
+                    ->orWhere('description', 'like', '%' . $validated['search'] . '%');
+            });
+        }
+
+        if (!empty($validated['brand_id'])) {
+            $query->where('id_brand', $validated['brand_id']);
+        }
+
+        if (!empty($validated['category_id'])) {
+            $query->whereHas('categorias', function ($q) use ($validated) {
+                $q->where('id', $validated['category_id']);
+            });
+        }
+
+        // Aplicar ordenamiento
+        $sortBy = $validated['sort_by'] ?? 'name';
+        $sortDir = $validated['sort_dir'] ?? 'asc';
+        $query->orderBy($sortBy, $sortDir);
+
+        // Paginación
+        $perPage = $validated['per_page'] ?? 15;
+        $products = $query->paginate($perPage);
+
+        // Transformar resultados usando el Resource
+        return ProductResource::collection($products)
+            ->additional([
+                'meta' => [
+                    'filters' => $validated,
+                    'sort' => [
+                        'by' => $sortBy,
+                        'direction' => $sortDir
+                    ]
+                ]
+            ]);
     }
 
     public function guardar(Request $request)
     {
+        $validated = $request->validate([
+            'id_empresa' => 'required|exists:empresas,id',
+            'id_brand' => 'required|exists:brands,id',
+            'id_category' => 'required|exists:categories,id',
+            /* 'id_unidad_medida' => 'required|exists:unidads_medidas,id', */
+            'codigo' => 'required|string|max:50|unique:products,codigo',
+            'name' => 'required|string|max:50',
+            'description' => 'nullable|string|max:100',
+            'imagen' => 'nullable|string|max:255',
+            'price' => 'required|numeric|min:0',
+            'stock' => 'numeric|min:0',
+            'slug' => 'nullable|string',
+            'ean13' => 'nullable|string|max:255',
+            'ean14' => 'nullable|string|max:255',
+            'codigo-sunat' => 'nullable|string|max:255',
+            'active' => 'boolean'
+        ]);
+
+        $product = Product::create($validated);
+        return response()->json($product, 201);
+    }
+    public function guardarold(Request $request)
+    {
         // Validación de datos
         $validator = Validator::make($request->all(), [
-            'empresa_id' => 'required|exists:empresas,id',
+            'id_empresa' => 'required|exists:empresas,id',
             'name' => 'required|string|max:100',
-            'code' => 'required|string|max:50|unique:products,code,NULL,id,empresa_id,' . $request->empresa_id,
+            'codigo' => 'required|string|max:50|unique:products,codigo,NULL,id,id_empresa,' . $request->id_empresa,
             'description' => 'nullable|string',
             'category_id' => 'required|exists:categories,id',
-            'brand_id' => 'nullable|exists:brands,id',
+            'id_brand' => 'nullable|exists:brands,id',
             'product_type' => 'required|in:simple,variable',
 
             // Campos para producto simple
             'sku' => 'required_if:product_type,simple|string|max:100',
             'price' => 'required_if:product_type,simple|numeric|min:0',
             'stock' => 'nullable|numeric|min:0',
-            'unit_id' => 'required_if:product_type,simple|exists:unidad_medida,id',
+            'unit_id' => 'required_if:product_type,simple|exists:unidad_medidas,id',
             'main_image' => 'nullable|image|max:2048',
             'images.*' => 'nullable|image|max:2048',
 
@@ -42,10 +140,14 @@ class ProductController extends Controller
             'variants.*.sunat_code' => 'nullable|string|max:13',
             'variants.*.price' => 'required|numeric|min:0',
             'variants.*.stock' => 'nullable|numeric|min:0',
-            'variants.*.unit_id' => 'required|exists:unidad_medida,id',
+            'variants.*.unit_id' => 'required|exists:unidad_medidas,id',
             'variants.*.attributes' => 'nullable|array',
             'variants.*.attributes.*.attribute_id' => 'required|exists:atributos,id',
-            'variants.*.attributes.*.value_id' => 'required|exists:atributo_valores,id',
+            /* 'variants.*.attributes.*.value_id' => 'required|exists:atributos_variante,id', */
+            'variants.*.attributes.*.value_id' => 'required',
+
+            /* 'categories' => 'required|array|min:1',
+            'categories.*' => 'exists:categories,id', */
         ]);
 
         if ($validator->fails()) {
@@ -60,12 +162,12 @@ class ProductController extends Controller
 
             // Crear producto principal
             $productData = $request->only([
-                'empresa_id',
+                'id_empresa',
                 'name',
-                'code',
+                'codigo',
                 'description',
                 'category_id',
-                'brand_id',
+                'id_brand',
                 'product_type'
             ]);
 
@@ -78,7 +180,8 @@ class ProductController extends Controller
             }
 
             $product = Product::create($productData);
-
+            // Asociar la categoría (o categorías) al producto
+            $product->categorias()->attach($request->category_id);
             // Manejar imágenes para producto simple
             if ($request->product_type === 'simple') {
                 if ($request->hasFile('main_image')) {
@@ -98,11 +201,12 @@ class ProductController extends Controller
             else {
                 foreach ($request->variants as $variantData) {
                     $variant = $product->variants()->create([
+                        'id_producto' => $product->id,
                         'sku' => $variantData['sku'],
-                        'sunat_code' => $variantData['sunat_code'],
-                        'price' => $variantData['price'],
+                        'codigo_sunat' => $variantData['sunat_code'],
+                        'precio' => $variantData['price'],
                         'stock' => $variantData['stock'],
-                        'unit_id' => $variantData['unit_id'],
+                        'id_unidad_medida' => $variantData['unit_id'],
                     ]);
 
                     // Asignar atributos a la variante
@@ -121,7 +225,7 @@ class ProductController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Producto creado exitosamente',
-                'data' => $product
+                'data' => $product->load(['empresa', 'brand', 'categorias', 'variantes'])
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -161,12 +265,41 @@ class ProductController extends Controller
         return response()->json($product->load('categorias'), 201);
     }
 
-    public function show($id)
+    public function shownew($id)
     {
-        $product = Product::with(['empresa', 'brand', 'categorias', 'variantes'])->find($id);
+        $product = Product::with([
+            'empresa:id,nombre',
+            'brand:id,name',
+            'categorias:id,name',
+            'variantes.atributos.tipoAtributo'
+        ])->find($id);
+
         if (!$product) {
             return response()->json(['message' => 'Producto no encontrado'], 404);
         }
+
+        // Transformar las variantes con sus atributos organizados
+        $product->variantes->transform(function ($variante) {
+            $atributosOrganizados = [];
+
+            foreach ($variante->atributos as $atributo) {
+                $tipo = strtolower($atributo->tipoAtributo->name);
+
+                if ($tipo === 'color') {
+                    $atributosOrganizados['colores'][] = $atributo->valor;
+                } else {
+                    $atributosOrganizados[$tipo] = $atributo->valor;
+                }
+            }
+
+            return array_merge($variante->toArray(), $atributosOrganizados);
+        });
+
+        return response()->json($product);
+    }
+    public function show($id)
+    {
+        $product = Product::with(['empresa', 'brand', 'category', 'unidadMedida'])->findOrFail($id);
         return response()->json($product);
     }
 

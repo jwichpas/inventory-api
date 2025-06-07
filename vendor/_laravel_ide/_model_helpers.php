@@ -16,7 +16,7 @@ namespace App\Models {
      * @property string|null $regimen_laboral
      * @property string|null $regimen_t_desde
      * @property string|null $regimen_tributario
-     * @property string $estado
+     * @property bool $estado
      * @property string|null $imagen
      * @property string|null $clave_afp
      * @property string|null $usuario_afp
@@ -34,6 +34,8 @@ namespace App\Models {
      * @property-read \App\Models\Empresa\EmpresaCondicionesSunat $condiciones
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Empresa\EmpresaTributosSunat> $tributos
      * @property-read int|null $tributos_count
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $usuarios
+     * @property-read int|null $usuarios_count
      * @method static \Illuminate\Database\Eloquent\Builder<Empresa>|Empresa whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Empresa>|Empresa whereNombre($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Empresa>|Empresa whereRuc($value)
@@ -60,6 +62,8 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<Empresa>|Empresa whereSunarpCargoRepresentante($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Empresa>|Empresa whereCreatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Empresa>|Empresa whereUpdatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Empresa>|Empresa activas()
+     * @method static \Illuminate\Database\Eloquent\Builder<Empresa>|Empresa buscar()
      * @method static \Illuminate\Database\Eloquent\Builder<Empresa>|Empresa newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<Empresa>|Empresa newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<Empresa>|Empresa query()
@@ -360,6 +364,7 @@ namespace App\Models {
      *
      * @property \Illuminate\Support\Carbon|null $updated_at
      * @property \Illuminate\Support\Carbon|null $created_at
+     * @property bool $active
      * @property string|null $remember_token
      * @property string|null $image
      * @property string $password
@@ -387,6 +392,7 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePassword($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereImage($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereRememberToken($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereActive($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereCreatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User role()

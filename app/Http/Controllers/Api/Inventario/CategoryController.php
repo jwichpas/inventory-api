@@ -10,9 +10,20 @@ use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
-    public function index()
+    public function index($idEmpresa)
     {
-        $categories = Categorie::with('empresa')->get();
+        $categories = Categorie::with('empresa')
+            ->where('id_empresa', $idEmpresa)
+            ->get();
+
+        return response()->json($categories);
+    }
+    public function categoriaxempresa($idEmpresa)
+    {
+        $categories = Categorie::with('empresa')
+            ->where('id_empresa', $idEmpresa)
+            ->get();
+
         return response()->json($categories);
     }
 
@@ -93,5 +104,22 @@ class CategoryController extends Controller
 
         $category->delete();
         return response()->json(['message' => 'Categoría eliminada correctamente']);
+    }
+
+    public function validateCode(Request $request)
+    {
+        $validated = $request->validate([
+            'codigo' => 'required|string|max:50',
+            'enterprise_id' => 'required|integer'
+        ]);
+
+        $exists = Categorie::where('codigo', $validated['codigo'])
+            ->where('id_empresa', $validated['enterprise_id'])
+            ->exists();
+
+        return response()->json([
+            'valid' => !$exists,
+            'message' => $exists ? 'Código duplicado (validación local)' : 'Código válido'
+        ]);
     }
 }

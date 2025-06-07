@@ -12,6 +12,15 @@ class Atributos extends Model
     protected $table = 'atributos';
     protected $fillable = ['id_empresa', 'id_tipo', 'valor'];
 
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
+    ];
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+    ];
+
     public function empresa()
     {
         return $this->belongsTo(Empresa::class, 'id_empresa');
@@ -26,4 +35,10 @@ class Atributos extends Model
     {
         return $this->belongsToMany(VarianteProduct::class, 'atributos_variante', 'id_atributo', 'id_variante');
     }
+
+    public function tipoAtributo()
+    {
+        return $this->belongsTo(TipoAtributos::class, 'id_tipo');
+    }
+
 }

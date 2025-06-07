@@ -58,7 +58,7 @@ class EmpresaDataController extends Controller
             'tributos.*.codTipIns' => 'required|string|max:1',
             'tributos.*.desConDis' => 'required|string|max:50',
             'tributos.*.exoneracion' => 'required|array',
-            'tributos.*.exoneracion.codExoDis' => 'required|string|max:10',
+            'tributos.*.exoneracion.codExoDis' => 'required|string|max:20',
         ]);
     }
 

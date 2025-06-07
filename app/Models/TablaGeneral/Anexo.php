@@ -14,4 +14,8 @@ class Anexo extends Model
     {
         return $this->belongsTo(Empresa::class, 'id_empresa');
     }
+    public function tipodocumentoidentidad()
+    {
+        return $this->belongsTo(TipoDocumentoIdentidad::class, 'id_tipo_documento_identidad');
+    }
 }

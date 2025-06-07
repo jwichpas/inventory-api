@@ -7,6 +7,7 @@ use App\Models\Empresa;
 use App\Models\Inventario\VarianteProduct;
 use App\Models\Inventario\Brand;
 use App\Models\Inventario\Categorie;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Product extends Model
 {
@@ -18,18 +19,14 @@ class Product extends Model
         return $this->belongsTo(Empresa::class, 'id_empresa');
     }
 
-    public function brand()
+    public function category(): BelongsTo
     {
-        return $this->belongsTo(Brand::class, 'id_brand');
+        return $this->belongsTo(Categorie::class,'id_category');
+    }
+    public function brand(): BelongsTo
+    {
+        return $this->belongsTo(Brand::class,'id_brand');
     }
 
-    public function variantes()
-    {
-        return $this->hasMany(VarianteProduct::class, 'id_producto');
-    }
 
-    public function categorias()
-    {
-        return $this->belongsToMany(Categorie::class, 'producto_categoria', 'id_producto', 'id_categoria');
-    }
 }

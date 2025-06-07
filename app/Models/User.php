@@ -71,7 +71,7 @@ class User extends Authenticatable
     }
     public function empresas()
     {
-        return $this->belongsToMany(Empresa::class, 'user_companies')
+        return $this->belongsToMany(Empresa::class, 'user_companies', 'user_id', 'empresa_id')
                     ->withTimestamps(); // Solo incluye created_at y updated_at
     }
 }

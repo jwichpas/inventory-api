@@ -381,7 +381,7 @@ class ComprasController extends Controller
                 ], 400);
             }
             // Consultar las compras filtradas por periodo
-            $compras = SireCompras::with(['tipoCambio', 'montos', 'documentosModificados', 'auditoria','archivo'])->select(
+            $compras = SireCompras::with(['tipoCambio', 'montos', 'documentosModificados', 'auditoria','archivo','items','clasificaciones'])->select(
                 'id',
                 'num_doc_identidad_proveedor',
                 'nom_razon_social_proveedor',
@@ -398,7 +398,7 @@ class ComprasController extends Controller
             )->where('per_tributario', $perPeriodo)
                 ->where('num_ruc', $perRuc)
                 ->orderBy('fec_emision', 'desc')
-                ->get();
+                ->paginate(20);
 
             // Validar que existan compras para el periodo
             if ($compras->isEmpty()) {
@@ -554,6 +554,7 @@ class ComprasController extends Controller
         // Devuelve las ventas que NO tienen ningún registro en ventas_archivos
         $ventas = SireCompras::whereDoesntHave('archivo')
             ->select('id', 'cod_tipo_cdp', 'num_serie_cdp', 'num_cdp', 'num_doc_identidad_proveedor')
+            ->where('cod_tipo_cdp', '=', '01')
             ->get();
 
         return response()->json([
