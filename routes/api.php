@@ -92,6 +92,8 @@ Route::apiResource('compras-archivos/xml', ComprasArchivoController::class);
 Route::apiResource('compras-items', ComprasItemController::class);
 Route::get('/compras-detalles/{num_ruc}', [ComprasItemController::class, 'getComprasItems']);
 
+
+
 // Ruta para listar VENTAS SIRE
 Route::apiResource('ventas', VentasController::class);
 Route::get('/ventas/ruc/{numRuc}', [VentasController::class, 'getVentasPorRuc']);
@@ -166,9 +168,12 @@ Route::get('/compras/ruc/{ruc}', [ComprasController::class, 'comprasPorRuc']);
 Route::get('/compras/proveedor', [ComprasController::class, 'comprasPorProveedor']);
 Route::get('/compras-sire/por-periodo', [ComprasController::class, 'obtenerComprasPorPeriodo']);
 Route::get('/compras/proveedor/compraspormes/{num_ruc}', [ComprasController::class, 'ComprasPorMesporPro']);
+
+Route::get('/compras-inventarios/por-periodo', [ComprasController::class, 'obtenerInventarioPorPeriodo']);
 //Guias de remisión SIRE
 Route::apiResource('despatch-advices', SireDespatchAdviceController::class);
 Route::get('despatch-advices/{id}/download-zip', [SireDespatchAdviceController::class, 'downloadZip']);
+
 
 Route::prefix('compras')->group(function () {
     Route::post('/{compraId}/clasificaciones', [ComprasClasificacionController::class, 'store']);

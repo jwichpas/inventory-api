@@ -14,14 +14,14 @@ class SireComprasClasificacion extends Model
         'estado'
     ];
 
-    protected $casts = [
+    /* protected $casts = [
         'tipo_proveedor' => 'string',
         'estado' => 'string'
-    ];
+    ]; */
 
     // Relación con la compra
     public function compra()
     {
-        return $this->belongsTo(SireCompras::class, 'compra_id', 'id');
+        return $this->belongsTo(SireCompras::class, 'id');
     }
 }

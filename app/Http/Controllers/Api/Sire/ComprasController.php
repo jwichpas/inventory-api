@@ -9,6 +9,7 @@ use App\Models\Sire\SireComprasTipoCambio;
 use App\Models\Sire\SireComprasMonto;
 use App\Models\Sire\SireComprasDocModificados;
 use App\Models\Sire\SireComprasAuditoria;
+use App\Models\Sire\SireComprasClasificacion;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 
@@ -17,7 +18,7 @@ class ComprasController extends Controller
     // Obtener todas las compras
     public function index()
     {
-        $compras = SireCompras::with(['tipoCambio', 'montos', 'documentosModificados', 'auditoria'])->orderBy('fec_emision', 'desc')->get();
+        $compras = SireCompras::with(['tipoCambio', 'montos', 'documentosModificados', 'auditoria','DespatchAdvice'])->orderBy('fec_emision', 'desc')->get();
         return response()->json($compras);
     }
 
@@ -271,7 +272,7 @@ class ComprasController extends Controller
     // Obtener una compra específica
     public function show($id)
     {
-        $compra = SireCompras::with(['tipoCambio', 'montos', 'documentosModificados', 'auditoria'])->findOrFail($id);
+        $compra = SireCompras::with(['tipoCambio', 'montos', 'documentosModificados', 'auditoria', 'clasificaciones', 'DespatchAdvice'])->findOrFail($id);
         return response()->json($compra);
     }
 
@@ -381,7 +382,7 @@ class ComprasController extends Controller
                 ], 400);
             }
             // Consultar las compras filtradas por periodo
-            $compras = SireCompras::with(['tipoCambio', 'montos', 'documentosModificados', 'auditoria','archivo','items','clasificaciones'])->select(
+            $query = SireCompras::with(['tipoCambio', 'montos', 'documentosModificados', 'auditoria','archivo','items','clasificaciones','DespatchAdvice'])->select(
                 'id',
                 'num_doc_identidad_proveedor',
                 'nom_razon_social_proveedor',
@@ -396,14 +397,163 @@ class ComprasController extends Controller
                 'fec_venc_pag',
                 'mto_total_cp'
             )->where('per_tributario', $perPeriodo)
-                ->where('num_ruc', $perRuc)
-                ->orderBy('fec_emision', 'desc')
-                ->paginate(20);
+                ->where('num_ruc', $perRuc);
+
+            // Filtrar por search si se proporciona
+            if ($request->has('search') && !empty($request->query('search'))) {
+                $search = $request->query('search');
+                $query->where(function ($q) use ($search) {
+                    $q->where('nom_razon_social_proveedor', 'like', "%{$search}%")
+                      ->orWhere('num_doc_identidad_proveedor', 'like', "%{$search}%")
+                      ->orWhere(function($q) use ($search) {
+                          // También buscar por la combinación serie-número
+                          $q->whereRaw("CONCAT(num_serie_cdp, '-', num_cdp) like ?", ["%{$search}%"]);
+                      });
+                });
+            }
+
+            // Filtrar por estado si se proporciona
+            if ($request->has('estado') && !empty($request->query('estado'))) {
+                $estado = $request->query('estado');
+                $query->where('des_estado_comprobante', 'like', "%{$estado}%");
+            }
+
+            // Filtrar por tipo_proveedor si se proporciona
+            if ($request->has('tipo_proveedor') && !empty($request->query('tipo_proveedor'))) {
+                $tipoProveedor = $request->query('tipo_proveedor');
+                $query->whereHas('clasificaciones', function ($q) use ($tipoProveedor) {
+                    $q->where('tipo_proveedor', $tipoProveedor);
+                });
+            }
+
+            // Filtrar por numero_guia si se proporciona
+            if ($request->has('numero_guia') && !empty($request->query('numero_guia'))) {
+                $numeroGuia = $request->query('numero_guia');
+                $query->whereHas('DespatchAdvice', function ($q) use ($numeroGuia) {
+                    $q->where('numero_guia', 'like', "%{$numeroGuia}%");
+                });
+            }
+
+            // Ordenar y paginar los resultados
+            $compras = $query->orderBy('fec_emision', 'desc')
+                            ->paginate($request->query('perPage', 20));
 
             // Validar que existan compras para el periodo
             if ($compras->isEmpty()) {
                 return response()->json([
                     'message' => 'No se encontraron compras para el periodo proporcionado.',
+                ], 404);
+            }
+
+            // Devolver los datos como JSON
+            return response()->json([
+                'message' => 'Compras obtenidas correctamente.',
+                'data' => $compras,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al procesar la solicitud.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+    public function obtenerInventarioPorPeriodo(Request $request)
+    {
+        try {
+            // Obtener el rango de fechas y RUC desde el query string
+            $desdeFecha = $request->query('desdefecha');
+            $hastaFecha = $request->query('hastafecha');
+            $perRuc = $request->query('per_ruc');
+
+            // Validar que se hayan proporcionado los parámetros necesarios
+            if (!$desdeFecha) {
+                return response()->json([
+                    'message' => 'El parámetro "desdefecha" es requerido.',
+                ], 400);
+            }
+            if (!$hastaFecha) {
+                return response()->json([
+                    'message' => 'El parámetro "hastafecha" es requerido.',
+                ], 400);
+            }
+            if (!$perRuc) {
+                return response()->json([
+                    'message' => 'El parámetro "per_ruc" es requerido.',
+                ], 400);
+            }
+            // Consultar las compras filtradas por rango de fechas
+            $query = SireCompras::with([
+                'tipoCambio',
+                'montos',
+                'documentosModificados',
+                'auditoria',
+                'archivo',
+                'items',
+                // Filtrar clasificaciones para que solo incluya las de tipo mercadería
+                'clasificaciones' => function($query) {
+                    $query->where('tipo_proveedor', 'mercaderia');
+                },
+                'DespatchAdvice'
+            ])->select(
+                'id',
+                'num_doc_identidad_proveedor',
+                'nom_razon_social_proveedor',
+                'cod_tipo_cdp',
+                'des_tipo_cdp',
+                'num_serie_cdp',
+                'num_cdp',
+                'cod_moneda',
+                'des_estado_comprobante',
+                'cod_estado_comprobante',
+                'fec_emision',
+                'fec_venc_pag',
+                'mto_total_cp'
+            )->whereBetween('fec_emision', [$desdeFecha, $hastaFecha])
+                ->where('num_ruc', $perRuc);
+
+            // Filtrar por search si se proporciona
+            if ($request->has('search') && !empty($request->query('search'))) {
+                $search = $request->query('search');
+                $query->where(function ($q) use ($search) {
+                    $q->where('nom_razon_social_proveedor', 'like', "%{$search}%")
+                      ->orWhere('num_doc_identidad_proveedor', 'like', "%{$search}%")
+                      ->orWhere(function($q) use ($search) {
+                          // También buscar por la combinación serie-número
+                          $q->whereRaw("CONCAT(num_serie_cdp, '-', num_cdp) like ?", ["%{$search}%"]);
+                      });
+                });
+            }
+
+            // Filtrar por estado si se proporciona
+            if ($request->has('estado') && !empty($request->query('estado'))) {
+                $estado = $request->query('estado');
+                $query->where('des_estado_comprobante', 'like', "%{$estado}%");
+            }
+
+            // Filtrar por tipo_proveedor si se proporciona
+            if ($request->has('tipo_proveedor') && !empty($request->query('tipo_proveedor'))) {
+                $tipoProveedor = $request->query('tipo_proveedor');
+                $query->whereHas('clasificaciones', function ($q) use ($tipoProveedor) {
+                    $q->where('tipo_proveedor', $tipoProveedor);
+                });
+            }
+
+            // Filtrar por numero_guia si se proporciona
+            if ($request->has('numero_guia') && !empty($request->query('numero_guia'))) {
+                $numeroGuia = $request->query('numero_guia');
+                $query->whereHas('DespatchAdvice', function ($q) use ($numeroGuia) {
+                    $q->where('numero_guia', 'like', "%{$numeroGuia}%");
+                });
+            }
+
+            // Ordenar y paginar los resultados
+            $compras = $query->orderBy('fec_emision', 'desc')
+                            ->paginate($request->query('perPage', 20));
+
+            // Validar que existan compras para el periodo
+            if ($compras->isEmpty()) {
+                return response()->json([
+                    'message' => 'No se encontraron compras para el rango de fechas proporcionado.',
                 ], 404);
             }
 
